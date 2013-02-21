@@ -88,6 +88,6 @@ read_json(Json) ->
 	end.
 
 url(Url, []) -> Url;
-url(Url, Params) -> Url ++ "?" ++ http_utils:query_string(Params).
+url(Url, Params) -> Url ++ "?" ++ utils_http:query_string(Params).
 url(Url, Params, []) -> url(Url, Params);
 url(Url, Params, ParamString) -> url(Url, Params) ++ "&" ++ ParamString.
