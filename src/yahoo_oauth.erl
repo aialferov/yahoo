@@ -172,17 +172,7 @@ signature_method("HMAC-SHA1") -> hmac_sha1;
 signature_method("PLAINTEXT") -> plaintext;
 signature_method("plaintext") -> plaintext.
 
-digit(N) when N < 10 -> $0 + N;
-digit(N) -> $a + N - 10.
-
-hex([H|T]) -> [digit(H bsr 4), digit(H band 16#f) | hex(T)];
-hex([]) -> [].
-
-generate_nonce() -> generate_nonce(?NonceFormat).
-generate_nonce(Format) ->
-	F = fun(X) -> hex(binary_to_list(crypto:rand_bytes(X))) end,
-	lists:foldl(fun(X, []) -> F(X);
-		(X, Acc) -> Acc ++ "-" ++ F(X) end, [], Format).
+generate_nonce() -> utils_crypto:generate_nonce(?NonceFormat).
 
 timestamp() ->
 	{MSecs, Secs, _} = erlang:now(),
