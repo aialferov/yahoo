@@ -153,16 +153,17 @@ auth_params(#oauth{
 signature(plaintext, _Method, _Url, _Params, ConsumerSecret, TokenSecret) ->
 	ConsumerSecret ++ "%26" ++ TokenSecret;
 signature(hmac_sha1, Method, Url, Params, ConsumerSecret, TokenSecret) ->
-	BaseString = case Method of
-			get -> "GET";
-			put -> "PUT";
-			post -> "POST";
-			delete -> "DELETE"
-		end ++ "&" ++ http_uri:encode(Url) ++ "&" ++ http_uri:encode(
-			utils_http:query_string(lists:keysort(1, Params)))
-	,
+	BaseString = method(Method) ++ "&" ++ http_uri:encode(Url) ++ "&" ++
+		http_uri:encode(utils_http:query_string(lists:keysort(1, Params))),
 	http_uri:encode(binary_to_list(base64:encode(crypto:sha_mac(
 		ConsumerSecret ++ "&" ++ TokenSecret, BaseString)))).
+
+method(Method) -> case Method of
+	get -> "GET";
+	put -> "PUT";
+	post -> "POST";
+	delete -> "DELETE"
+end.
 
 signature_method("HMAC-SHA1") -> hmac_sha1;
 signature_method("PLAINTEXT") -> plaintext;
