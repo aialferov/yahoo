@@ -1,1 +1,1 @@
-{deps, ["../../../yahoo"]}.
+{deps, ["../../../yahoo_backend"]}.

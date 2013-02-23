@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project=yahoo
+project=yahoo_backend
 snapshot_dir=../snapshots/$project
 flash_root=$FLASH_ROOT
 flash_dir=$flash_root/flash/projects/esbsn/$project
