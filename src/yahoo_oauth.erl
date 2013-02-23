@@ -12,6 +12,21 @@
 
 -include("oauth.hrl").
 
+-define(OAuthRequestTokenRecord, {#oauth_request_token{}, [
+    "oauth_token",
+    "oauth_token_secret",
+    "oauth_expires_in",
+    "xoauth_request_auth_url"
+]}).
+-define(OAuthTokenRecord, {#oauth_token{}, [
+    "oauth_token",
+    "oauth_token_secret",
+    "oauth_expires_in",
+    "oauth_session_handle",
+    "oauth_authorization_expires_in",
+    "xoauth_yahoo_guid"
+]}).
+
 -define(NonceFormat, [4]).
 
 get_request_token(
@@ -29,12 +44,7 @@ get_request_token(
 		{"oauth_timestamp", timestamp()},
 		{"oauth_version", Version},
 		{"xoauth_lang_pref", Lang}
-	], ConsumerSecret), {#oauth_request_token{}, oauth_request_token}, [
-		"oauth_token",
-		"oauth_token_secret",
-		"oauth_expires_in",
-		"xoauth_request_auth_url"
-	]).
+	], ConsumerSecret), ?OAuthRequestTokenRecord).
 
 get_token(
 	#oauth_request{token = Token, secret = TokenSecret, verifier = Verifier},
@@ -44,20 +54,13 @@ get_token(
 ) ->
 	read_oauth(request_token(Url ++ "/get_token", [
 		{"oauth_consumer_key", ConsumerKey},
-        {"oauth_nonce", generate_nonce()},
-        {"oauth_signature_method", SignatureMethod},
-        {"oauth_timestamp", timestamp()},
+		{"oauth_nonce", generate_nonce()},
+		{"oauth_signature_method", SignatureMethod},
+		{"oauth_timestamp", timestamp()},
 		{"oauth_token", Token},
 		{"oauth_verifier", Verifier},
-        {"oauth_version", Version}
-	], ConsumerSecret, TokenSecret), {#oauth_token{}, oauth_token}, [
-		"oauth_token",
-		"oauth_token_secret",
-		"oauth_expires_in",
-		"oauth_session_handle",
-		"oauth_authorization_expires_in",
-		"xoauth_yahoo_guid"
-	]).
+		{"oauth_version", Version}
+	], ConsumerSecret, TokenSecret), ?OAuthTokenRecord).
 
 refresh_token(#oauth{
 	token = Token, secret = TokenSecret, session_handle = SessionHandle,
@@ -73,14 +76,7 @@ refresh_token(#oauth{
 		{"oauth_timestamp", timestamp()},
 		{"oauth_token", http_uri:encode(Token)},
 		{"oauth_version", Version}
-	], ConsumerSecret, TokenSecret), {#oauth_token{}, oauth_token}, [
-		"oauth_token",
-		"oauth_token_secret",
-		"oauth_expires_in",
-		"oauth_session_handle",
-		"oauth_authorization_expires_in",
-		"xoauth_yahoo_guid"
-	]).
+	], ConsumerSecret, TokenSecret), ?OAuthTokenRecord).
 
 request_token(Url, Params, ConsumerSecret) ->
 	request_token(Url, Params, ConsumerSecret, []).
@@ -93,22 +89,22 @@ request_token(Url, Params, ConsumerSecret, TokenSecret) ->
 		utils_http:query_string([{"oauth_signature", Signature}|Params])},
 	[], []).
 
-read_oauth({ok, {{_, 200, _}, _, Body}}, {Record, Type}, Keys) ->
+read_oauth({ok, {{_, 200, _}, _, Body}}, {Record, Keys}) ->
 	Query = utils_http:read_query(Body),
 	{ok, lists:foldl(fun(Key, R) -> case lists:keyfind(Key, 1, Query) of
-		{Key, Value} -> update_record({R, Type}, Key, Value); false -> R
+		{Key, Value} -> update_record(R, Key, Value); false -> R
 	end end, Record, Keys)};
-read_oauth({ok, {{_, _, _}, _, Body}}, _, _) -> {error, Body};
-read_oauth(Error, _, _) -> Error.
+read_oauth({ok, {{_, _, _}, _, Body}}, _) -> {error, Body};
+read_oauth(Error, _) -> Error.
 
-update_record({R, oauth_request_token}, Key, Value) -> case Key of
+update_record(R = #oauth_request_token{}, Key, Value) -> case Key of
 	"oauth_token" -> R#oauth_request_token{token = Value};
 	"oauth_token_secret" -> R#oauth_request_token{secret = Value};
 	"oauth_expires_in" -> R#oauth_request_token{expires_in = Value};
 	"xoauth_request_auth_url" ->
 		R#oauth_request_token{request_auth_url = Value}
 end;
-update_record({R, oauth_token}, Key, Value) -> case Key of
+update_record(R = #oauth_token{}, Key, Value) -> case Key of
 	"oauth_token" -> R#oauth_token{token = Value};
 	"oauth_token_secret" -> R#oauth_token{secret = Value};
 	"oauth_expires_in" -> R#oauth_token{expires_in = Value};
