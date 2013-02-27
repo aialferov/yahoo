@@ -89,7 +89,7 @@ send_message(Token, TokenSecret, SessionID, Server, ContactID, Message) ->
 notification_loop(Token, TokenSecret, SessionID,
 	Server, PrimaryLoginID, Seq, ImToken
 ) ->
-	yahoo_messenger:notification_loop(
+	yahoo_messenger:receive_notification(
 		?OAuth(Token, TokenSecret, [], ?OAuthConsumer, ?OAuthConfig),
 		SessionID, Server, PrimaryLoginID, Seq, ImToken
 	).
