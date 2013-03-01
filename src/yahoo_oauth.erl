@@ -158,12 +158,10 @@ signature(hmac_sha1, Method, Url, Params, ConsumerSecret, TokenSecret) ->
 	http_uri:encode(binary_to_list(base64:encode(crypto:sha_mac(
 		ConsumerSecret ++ "&" ++ TokenSecret, BaseString)))).
 
-method(Method) -> case Method of
-	get -> "GET";
-	put -> "PUT";
-	post -> "POST";
-	delete -> "DELETE"
-end.
+method(get) -> "GET";
+method(put) -> "PUT";
+method(post) -> "POST";
+method(delete) -> "DELETE".
 
 signature_method("HMAC-SHA1") -> hmac_sha1;
 signature_method("PLAINTEXT") -> plaintext;
