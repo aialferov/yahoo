@@ -78,8 +78,8 @@ receive_notification(OAuth, SessionID, Server, PrimaryLoginID, Seq, ImToken) ->
 	read_response(httpc:request(Request)).
 
 read_response({ok, {{_, 200, _}, _, Body}}) -> {ok, read_json(Body)};
-read_response({ok, {{_, _, Reason}, _, Body}}) ->
-	{error, {Reason, read_json(Body)}};
+read_response({ok, {{_, Code, Reason}, _, Body}}) ->
+	{error, {{Code, Reason}, read_json(Body)}};
 read_response(Error) -> Error.
 
 read_json(Json) ->
