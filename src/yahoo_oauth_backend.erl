@@ -5,12 +5,12 @@
 %%% Created: 04 Feb 2013 by Anton I Alferov <casper@ubca-dp>
 %%%-------------------------------------------------------------------
 
--module(yahoo_oauth).
+-module(yahoo_oauth_backend).
 
 -export([get_request_token/2, get_token/3, refresh_token/1]).
 -export([auth_header/4, auth_query/4]).
 
--include("oauth.hrl").
+-include("yahoo_oauth_backend.hrl").
 
 -define(OAuthRequestTokenRecord, {#oauth_request_token{}, [
     "oauth_token",

@@ -5,7 +5,7 @@
 %%% Created: 04 Feb 2013 by Anton I Alferov <casper@ubca-dp>
 %%%-------------------------------------------------------------------
 
--module(yahoo_messenger).
+-module(yahoo_messenger_backend).
 
 -export([login/1, logout/2, keepalive/2]).
 -export([send_message/5, receive_notification/6]).
@@ -44,28 +44,29 @@
 login(OAuth) ->
 	read_response(httpc:request(post, {
 		url(?SessionUrl, ?LoginParams),
-		[yahoo_oauth:auth_header(post, ?SessionUrl, ?LoginParams, OAuth)],
+		[yahoo_oauth_backend:auth_header(
+			post, ?SessionUrl, ?LoginParams, OAuth)],
 		?ContentType, ?LoginBody
 	}, [], [])).
 
 logout(OAuth, SessionID) ->
 	read_response(httpc:request(delete, {
 		url(?SessionUrl, ?LogoutParams(SessionID)),
-		[yahoo_oauth:auth_header(delete,
+		[yahoo_oauth_backend:auth_header(delete,
 			?SessionUrl, ?LogoutParams(SessionID), OAuth)]
 	}, [], [])).
 
 keepalive(OAuth, SessionID) ->
 	read_response(httpc:request(put, {
 		url(?KeepAliveUrl, ?KeepAliveParams(SessionID)),
-		[yahoo_oauth:auth_header(put,
+		[yahoo_oauth_backend:auth_header(put,
 			?KeepAliveUrl, ?KeepAliveParams(SessionID), OAuth)], [], []
 	}, [], [])).
 
 send_message(OAuth,	SessionID, Server, ContactID, Message) ->
 	read_response(httpc:request(post, {
 		url(?MessageUrl(Server, ContactID), ?MessageParams(SessionID)),
-		[yahoo_oauth:auth_header(post,
+		[yahoo_oauth_backend:auth_header(post,
 			?MessageUrl(Server, ContactID), ?MessageParams(SessionID), OAuth)],
 		?ContentType, ?MessageBody(Message)
 	}, [], [])).
@@ -74,7 +75,7 @@ receive_notification(OAuth, SessionID, Server, PrimaryLoginID, Seq, ImToken) ->
 	Url = ?PushNotificationUrl(Server, PrimaryLoginID),
 	Params = ?PushNotificationParams(SessionID, Seq, ImToken),
 	Request = url(Url, Params,
-		yahoo_oauth:auth_query(get, Url, Params, OAuth)),
+		yahoo_oauth_backend:auth_query(get, Url, Params, OAuth)),
 	read_response(httpc:request(Request)).
 
 read_response({ok, {{_, 200, _}, _, Body}}) -> {ok, read_json(Body)};
