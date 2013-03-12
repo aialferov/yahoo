@@ -1,4 +1,4 @@
--module(usage).
+-module(backend).
 -compile(export_all).
 
 -include("yahoo_oauth_backend.hrl").
