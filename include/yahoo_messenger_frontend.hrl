@@ -1,0 +1,3 @@
+-record(session, {id, primary_login_id, server, notify, contacts}).
+-record(notify, {server_token, server}).
+-record(contact, {id, presence = offline}).
