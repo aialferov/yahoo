@@ -25,8 +25,6 @@
 	signature_method = "HMAC-SHA1"
 }).
 
--define(Realm, "yahooapis.com").
-
 get_request_token() ->
 	case yahoo_oauth_backend:get_request_token(?OAuthConsumer, ?OAuthConfig) of
 		{ok, RequestToken} ->
