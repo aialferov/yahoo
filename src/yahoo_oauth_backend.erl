@@ -37,7 +37,7 @@ get_request_token(
 	}
 ) ->
 	read_oauth(request_token(Url ++ "/get_request_token", [
-		{"oauth_callback", Callback},
+		{"oauth_callback", http_uri:encode(Callback)},
 		{"oauth_consumer_key", ConsumerKey},
 		{"oauth_nonce", generate_nonce()},
 		{"oauth_signature_method", SignatureMethod},
