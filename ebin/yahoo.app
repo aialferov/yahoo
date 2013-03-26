@@ -14,5 +14,5 @@
 		yahoo_oauth_backend
 	]},
 	{registered, []},
-	{applications, [kernel, stdlib]}
+	{applications, [kernel, stdlib, utils]}
 ]}.
