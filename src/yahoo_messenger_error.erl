@@ -28,9 +28,9 @@ handle(error, Reason) -> exit({error, Reason});
 handle(Result, _Reason) -> Result.
 
 handle_error(login, OAuth, token_expired) ->
-	refresh(OAuth, fun(NewOAuth) -> login(NewOAuth) end);
+	refresh(OAuth, fun(NewOAuth) -> login({new, NewOAuth}) end);
 handle_error(logout, {OAuth, Session}, token_expired) ->
-	refresh(OAuth, fun(NewOAuth) -> logout(NewOAuth, Session) end);
+	refresh(OAuth, fun(NewOAuth) -> logout({new, NewOAuth}, Session) end);
 handle_error(send_message, State, token_expired) ->
 	{OAuth, Session, ContactID, Message} = State,
 	refresh(OAuth, fun(NewOAuth) -> send_message(
@@ -42,7 +42,7 @@ handle_error(keepalive, {OAuth, Session, Callback}, token_expired) ->
 handle_error(notification, State, token_expired) ->
 	{NotifyHandler, OAuth, Session, Seq} = State,
 	refresh(OAuth, fun(NewOAuth) ->
-		(NotifyHandler#notify_handler.handle_oauth_session)(NewOAuth),
+		(NotifyHandler#notify_handler.handle_oauth)(NewOAuth),
 		yahoo_messenger_notify:loop(NotifyHandler, NewOAuth, Session, Seq)
 	end);
 handle_error(notification, State, bad_im_cookie) ->

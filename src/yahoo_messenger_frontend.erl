@@ -16,23 +16,37 @@
 
 -define(Empty, "\n").
 
-login(OAuth) -> login(OAuth, yahoo_messenger_backend:login(OAuth)).
-login(OAuth, {ok, Result}) -> {ok, {OAuth, read_session(Result)}};
-login(OAuth, {error, Reason}) -> handle_error(login, OAuth, Reason).
+login(OAuth = #oauth{}) -> login({current, OAuth});
+login({Version, OAuth}) ->
+	login({Version, OAuth}, yahoo_messenger_backend:login(OAuth)).
+login({current, _OAuth}, {ok, Result}) -> {ok, read_session(Result)};
+login({new, OAuth}, {ok, Result}) -> {ok, {OAuth, read_session(Result)}};
+login({_Version, OAuth}, {error, Reason}) ->
+	handle_error(login, OAuth, Reason).
 
-logout(OAuth, Session) -> logout(OAuth, Session,
+logout(OAuth = #oauth{}, Session) -> logout({current, OAuth}, Session);
+logout({Version, OAuth}, Session) -> logout({Version, OAuth}, Session,
 	yahoo_messenger_backend:logout(OAuth, Session#session.id)).
-logout(OAuth, Session, {ok, ?Empty}) -> {ok, {OAuth, Session}};
-logout(OAuth, Session, {error, Reason}) ->
+logout({current, _OAuth}, Session, {ok, ?Empty}) -> {ok, Session};
+logout({new, OAuth}, Session, {ok, ?Empty}) -> {ok, {OAuth, Session}};
+logout({_Version, OAuth}, Session, {error, Reason}) ->
 	handle_error(logout, {OAuth, Session}, Reason).
 
-send_message(OAuth, Session, ContactID, Message) -> send_message(
-	OAuth, Session, ContactID, Message, yahoo_messenger_backend:send_message(
+send_message(OAuth = #oauth{}, Session, ContactID, Message) ->
+	send_message({current, OAuth}, Session, ContactID, Message);
+send_message({Version, OAuth}, Session, ContactID, Message) -> send_message(
+	{Version, OAuth}, Session, ContactID, Message,
+	yahoo_messenger_backend:send_message(
 		OAuth, Session#session.id, Session#session.server, ContactID, Message)
 ).
-send_message(OAuth, Session, _ContactID, _Message, {ok, ?Empty}) ->
+send_message({current, _OAuth}, Session, _ContactID, _Message, {ok, ?Empty}) ->
+	{ok, Session};
+send_message({new, OAuth}, Session, _ContactID, _Message, {ok, ?Empty}) ->
 	{ok, {OAuth, Session}};
-send_message(OAuth, Session, ContactID, Message, {error, Reason}) ->
+send_message(
+	{_Version, OAuth}, Session,
+	ContactID, Message, {error, Reason}
+) ->
 	handle_error(send_message, {OAuth, Session, ContactID, Message}, Reason).
 
 refresh(OAuth, Callback) ->
