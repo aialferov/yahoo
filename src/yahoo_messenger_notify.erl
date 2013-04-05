@@ -69,7 +69,9 @@ read_notification(offlineMessage, OfflineMessage) ->
 
 read_notification(disconnect, Disconnect) ->
 	{read(sequence, Disconnect), #disconnect{
-		reason = disconnect_reason(read(reason, Disconnect))}}.
+		reason = disconnect_reason(read(reason, Disconnect))}};
+
+read_notification(_, Notification) -> {read(sequence, Notification), []}.
 
 read_message(Message) -> #message{
 	contact_id = binary_to_list(read(sender, Message)),
