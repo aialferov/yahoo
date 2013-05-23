@@ -11,7 +11,7 @@
 -export([send_message/4]).
 -export([refresh/2, keepalive/3]).
 
--include("yahoo_oauth_backend.hrl").
+-include("oauth.hrl").
 -include("yahoo_messenger_frontend.hrl").
 
 -define(Empty, "\n").
@@ -50,8 +50,8 @@ send_message(
 	handle_error(send_message, {OAuth, Session, ContactID, Message}, Reason).
 
 refresh(OAuth, Callback) ->
-	refresh(OAuth, Callback, yahoo_oauth_backend:refresh_token(OAuth)).
-refresh(OAuth, Callback, {ok, Token}) -> Callback(update_oauth(OAuth, Token));
+	refresh(OAuth, Callback, oauth:refresh_access_token(yahoo, OAuth)).
+refresh(OAuth, Callback, {ok, Token}) -> Callback(OAuth#oauth{token = Token});
 refresh(OAuth, Callback, {error, Reason}) ->
 	handle_error(refresh, {OAuth, Callback}, Reason).
 
@@ -80,11 +80,6 @@ read_session(Session) -> #session{
 
 read(Key, List) -> {Key, Value} = lists:keyfind(Key, 1, List), Value.
 
-update_oauth(OAuth, Token) -> OAuth#oauth{
-	token = Token#oauth_token.token,
-	secret = Token#oauth_token.secret,
-	session_handle = Token#oauth_token.session_handle
-}.
 update_session(Session, Result) ->
 	[{notifyServerToken, NotifyServerToken}] = Result,
 	{token, Token} = lists:keyfind(token, 1, NotifyServerToken),

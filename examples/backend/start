@@ -1,3 +1,4 @@
 #!/bin/bash
 
-erl -pa ebin deps/*/ebin -s ssl -s inets
+erl -pa ebin -pa deps/*/ebin -boot start_sasl \
+	-s ssl -s inets -s utils -s oauth
