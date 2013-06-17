@@ -20,16 +20,16 @@ refresh_access_token(OAuth) -> oauth:refresh_access_token(OAuth).
 
 login(OAuth) ->
 	{ok, Result} = yahoo_messenger_backend:login(OAuth),
-	io:format("~p~n~p~n", [Result, utils_lists:keyfind(token,
-		utils_lists:keyfind(notifyServerToken, Result))]).
+	io:format("~p~n~p~n", [Result, utils_lists:keyfind2(token,
+		utils_lists:keyfind2(notifyServerToken, Result))]).
 
 logout(OAuth, SessionID) ->
 	yahoo_messenger_backend:logout(OAuth, SessionID).
 
 keepalive(OAuth, SessionID) ->
 	{ok, Result} = yahoo_messenger_backend:keepalive(OAuth, SessionID),
-	io:format("~p~n~p~n", [Result, utils_lists:keyfind(token,
-		utils_lists:keyfind(notifyServerToken, Result))]).
+	io:format("~p~n~p~n", [Result, utils_lists:keyfind2(token,
+		utils_lists:keyfind2(notifyServerToken, Result))]).
 
 send_message(OAuth, SessionID, Server, ContactID, Message) ->
 	yahoo_messenger_backend:send_message(
