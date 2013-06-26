@@ -8,7 +8,7 @@
 -module(yahoo_messenger_backend).
 
 -export([login/1, logout/2, keepalive/2]).
--export([send_message/5, receive_notification/6]).
+-export([send_message/5, notification/6]).
 
 -define(ContentType, "application/json;charset=utf-8").
 
@@ -66,7 +66,7 @@ send_message(OAuth,	SessionID, Server, ContactID, Message) ->
 		?ContentType, ?MessageBody(Message)
 	}, [], [])).
 
-receive_notification(OAuth, SessionID, Server, PrimaryLoginID, Seq, ImToken) ->
+notification(OAuth, SessionID, Server, PrimaryLoginID, Seq, ImToken) ->
 	Url = ?PushNotificationUrl(Server, PrimaryLoginID),
 	Params = ?PushNotificationParams(SessionID, Seq, ImToken),
 	read_response(httpc:request(utils_http:url(

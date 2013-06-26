@@ -17,48 +17,77 @@
 -define(BadImCookieError, {{_, "bad IM cookie or URI credentials"}, []}).
 -define(EmptyError, {{999, []}, "\n"}).
 
-handle(Command, State, Reason) ->
-	io:format("handle error: ~p ~p~n", [Command, Reason]),
-	handle(Command, State, Reason, read_error(Reason)).
-handle(_Command, _State, Reason, unknown) -> handle(error, Reason);
-handle(Command, State, Reason, Known) ->
-	handle(handle_error(Command, State, Known), Reason).
+-define(Flags, [oauth, session]).
 
-handle(error, Reason) -> exit({error, Reason});
-handle(Result, _Reason) -> Result.
+handle(Command, Flags, Reason) ->
+	io:format("~p~n", [Reason]),
+	request(error_to_request(read_error(Reason)), Command, Flags).
 
-handle_error(login, OAuth, token_expired) ->
-	refresh(OAuth, fun(NewOAuth) -> login({new, NewOAuth}) end);
-handle_error(logout, {OAuth, Session}, token_expired) ->
-	refresh(OAuth, fun(NewOAuth) -> logout({new, NewOAuth}, Session) end);
-handle_error(send_message, State, token_expired) ->
-	{OAuth, Session, ContactID, Message} = State,
-	refresh(OAuth, fun(NewOAuth) -> send_message(
-		NewOAuth, Session, ContactID, Message) end);
-handle_error(keepalive, {OAuth, Session, Callback}, token_expired) ->
-	refresh(OAuth, fun(NewOAuth) -> keepalive(
-		NewOAuth, Session, Callback) end);
+error_to_request(session_expired) -> {ok, login};
+error_to_request(token_expired) -> {ok, refresh};
+error_to_request(bad_im_cookie) -> {ok, keepalive};
+error_to_request(Reason) -> {error, Reason}.
 
-handle_error(notification, State, token_expired) ->
-	{NotifyHandler, OAuth, Session, Seq} = State,
-	refresh(OAuth, fun(NewOAuth) ->
-		(NotifyHandler#notify_handler.handle_oauth)(NewOAuth),
-		yahoo_messenger_notify:loop(NotifyHandler, NewOAuth, Session, Seq)
-	end);
-handle_error(notification, State, bad_im_cookie) ->
-	{NotifyHandler, OAuth, Session, Seq} = State,
-	keepalive(OAuth, Session, fun(NewOAuth, NewSession) ->
-		(NotifyHandler#notify_handler.handle_oauth_session)
-			(NewOAuth, NewSession),
-		yahoo_messenger_notify:loop(NotifyHandler, NewOAuth, NewSession, Seq)
-	end);
-handle_error(notification, State, Reason) when
-	Reason == empty; Reason == socket_closed_remotely
+request({ok, Request}, Command, Flags) ->
+	request(Request, Command, Flags, request(Request, Command));
+request(Error, _Command, _Flags) -> Error.
+
+request(login, Command) -> yahoo:login(oauth(Command));
+request(refresh, Command) -> oauth:refresh_access_token(yahoo, oauth(Command));
+request(keepalive, Command) ->
+	yahoo:keepalive(oauth(Command), session(Command)).
+
+request(Request, Command, Flags, {ok, Result}) ->
+	request(update_request(Command, result(Request, Result), Flags));
+request(_Request, _Command, _Flags, Error) -> Error.
+
+result(Request, Result) when Request == login; Request == keepalive ->
+	case Result of
+		{up_to_date, Session} -> {session, Session};
+		{OAuth, Session} -> {OAuth, Session}
+	end;
+result(refresh, OAuth) -> {oauth, OAuth}.
+
+oauth(Command) -> {OAuth, _Session} = oauth_session(Command), OAuth.
+session(Command) -> {_OAuth, Session} = oauth_session(Command), Session.
+
+oauth_session({login, OAuth}) -> {OAuth, false};
+oauth_session({logout, {OAuth, Session}}) -> {OAuth, Session};
+oauth_session({keepalive, {OAuth, Session}}) -> {OAuth, Session};
+oauth_session({send_message,
+	{OAuth, Session, _ContactID, _Message}}) -> {OAuth, Session};
+oauth_session({notification, {OAuth, Session, _Seq}}) -> {OAuth, Session}.
+
+update_request({login, _OAuth}, {oauth, NewOAuth}, Flags) ->
+	{{login, NewOAuth}, [oauth|Flags]};
+
+update_request({Name, {OAuth, Session}}, NewArgs, Flags)
+	when Name == logout; Name == keepalive
 ->
-	{NotifyHandler, OAuth, Session, Seq} = State,
-	yahoo_messenger_notify:loop(NotifyHandler, OAuth, Session, Seq);
+	{{NewOAuth, NewSession}, NewFlags} =
+		update_args({OAuth, Session}, NewArgs, Flags),
+	{{Name, {NewOAuth, NewSession}}, NewFlags};
 
-handle_error(_Command, _State, _Reason) -> error.
+update_request(
+	{send_message, {OAuth, Session, ContactID, Message}}, NewArgs, Flags
+) ->
+	{{NewOAuth, NewSession}, NewFlags} =
+		update_args({OAuth, Session}, NewArgs, Flags),
+	{{send_message, {NewOAuth, NewSession, ContactID, Message}}, NewFlags};
+
+update_request({notification, {OAuth, Session, Seq}}, NewArgs, Flags) ->
+	{{NewOAuth, NewSession}, NewFlags} =
+		update_args({OAuth, Session}, NewArgs, Flags),
+	{{notification, {NewOAuth, NewSession, Seq}}, NewFlags}.
+
+update_args({OAuth, Session}, NewArgs, Flags) -> case NewArgs of
+	{oauth, NewOAuth} -> {{NewOAuth, Session}, [oauth|Flags]};
+	{session, NewSession} -> {{OAuth, NewSession}, [session|Flags]};
+	{NewOAuth, NewSession} -> {{NewOAuth, NewSession}, [oauth, session|Flags]}
+end.
+
+request({Command, Flags}) -> yahoo_messenger_frontend:request(
+	Command, [Flag || Flag <- ?Flags, lists:member(Flag, Flags)]).
 
 read_error(socket_closed_remotely) -> socket_closed_remotely;
 read_error(?AuthTokenExpiredError) -> token_expired;
@@ -67,13 +96,3 @@ read_error(?BadImCookieError) -> bad_im_cookie;
 read_error(?EmptyError) -> empty;
 read_error({Reason, [_|T]}) -> read_error({Reason, T});
 read_error({_, []}) -> unknown.
-
-
-login(OAuth) -> yahoo_messenger_frontend:login(OAuth).
-logout(OAuth, Session) -> yahoo_messenger_frontend:login(OAuth, Session).
-send_message(OAuth, Session, ContactID, Message) ->
-	yahoo_messenger_frontend:login(OAuth, Session, ContactID, Message).
-
-refresh(OAuth, Callback) -> yahoo_messenger_frontend:refresh(OAuth, Callback).
-keepalive(OAuth, Session, Callback) ->
-	yahoo_messenger_frontend:keepalive(OAuth, Session, Callback).
