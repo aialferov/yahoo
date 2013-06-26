@@ -8,7 +8,7 @@
 -module(yahoo_messenger_session).
 -export([read/1, update/2]).
 
--include("yahoo_messenger_frontend.hrl").
+-include("yahoo_messenger.hrl").
 
 read(Session) -> #yahoo_session{
 	id = binary_to_list(utils_lists:keyfind2(sessionId, Session)),

@@ -5,7 +5,7 @@
 %%% Created: 04 Feb 2013 by Anton I Alferov <casper@ubca-dp>
 %%%-------------------------------------------------------------------
 
--module(yahoo_messenger_backend).
+-module(yahoo_messenger_request).
 
 -export([login/1, logout/2, keepalive/2]).
 -export([send_message/5, notification/6]).

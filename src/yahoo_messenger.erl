@@ -5,27 +5,27 @@
 %%% Created: 01 Mar 2013 by Anton I Alferov <casper@ubca-dp>
 %%%-------------------------------------------------------------------
 
--module(yahoo_messenger_frontend).
+-module(yahoo_messenger).
 -export([request/2]).
 
--include("yahoo_messenger_frontend.hrl").
+-include("yahoo_messenger.hrl").
 
 -define(Empty, "\n").
 
 request(Command = {login, OAuth}, Flags) ->
-	request(Command, Flags, yahoo_messenger_backend:login(OAuth));
+	request(Command, Flags, yahoo_messenger_request:login(OAuth));
 request(Command = {logout, {OAuth, #yahoo_session{id = SessionID}}}, Flags) ->
-	request(Command, Flags, yahoo_messenger_backend:logout(OAuth, SessionID));
+	request(Command, Flags, yahoo_messenger_request:logout(OAuth, SessionID));
 request(Command = {keepalive, {OAuth, S = _Session}}, Flags) ->
-	request(Command, Flags, yahoo_messenger_backend:keepalive(
+	request(Command, Flags, yahoo_messenger_request:keepalive(
 		OAuth, S#yahoo_session.id));
 request(
 	Command = {send_message, {OAuth, S = _Session, ContactID, Message}}, Flags
 ) ->
-	request(Command, Flags, yahoo_messenger_backend:send_message(OAuth,
+	request(Command, Flags, yahoo_messenger_request:send_message(OAuth,
 		S#yahoo_session.id, S#yahoo_session.server, ContactID, Message));
 request(Command = {notification, {OAuth, S = _Session, Seq}}, Flags) ->
-	request(Command, Flags, yahoo_messenger_backend:notification(OAuth,
+	request(Command, Flags, yahoo_messenger_request:notification(OAuth,
 		S#yahoo_session.id,
 		S#yahoo_session.notification_server
 			#yahoo_notification_server.host_name,
@@ -44,7 +44,7 @@ request(
 ) ->
 	result(Flags, {OAuth, Session});
 request({notification, {OAuth, Session, _Seq}}, Flags, {ok, Result}) ->
-	result(Flags, {OAuth, Session}, yahoo_messenger_notify:read(Result));
+	result(Flags, {OAuth, Session}, yahoo_messenger_notification:read(Result));
 
 request(Command, Flags, {error, Reason}) ->
 	yahoo_messenger_error:handle(Command, Flags, Reason).

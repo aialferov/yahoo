@@ -8,7 +8,7 @@
 -module(yahoo_messenger_error).
 -export([handle/3]).
 
--include("yahoo_messenger_notify.hrl").
+-include("yahoo_messenger_notification.hrl").
 
 -define(AuthError, "Authorization Required").
 -define(AuthTokenExpiredError, {{_, ?AuthError}, "token_expired" ++ _}).
@@ -86,7 +86,7 @@ update_args({OAuth, Session}, NewArgs, Flags) -> case NewArgs of
 	{NewOAuth, NewSession} -> {{NewOAuth, NewSession}, [oauth, session|Flags]}
 end.
 
-request({Command, Flags}) -> yahoo_messenger_frontend:request(
+request({Command, Flags}) -> yahoo_messenger:request(
 	Command, [Flag || Flag <- ?Flags, lists:member(Flag, Flags)]).
 
 read_error(socket_closed_remotely) -> socket_closed_remotely;

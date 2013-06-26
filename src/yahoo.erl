@@ -27,4 +27,4 @@ send_message(OAuth, Session, ContactID, Message) ->
 notification(OAuth, Session, Seq) ->
 	request({notification, {OAuth, Session, Seq}}).
 
-request(Command) -> yahoo_messenger_frontend:request(Command, []).
+request(Command) -> yahoo_messenger:request(Command, []).

@@ -5,10 +5,10 @@
 %%% Created: 01 Mar 2013 by Anton I Alferov <casper@ubca-dp>
 %%%-------------------------------------------------------------------
 
--module(yahoo_messenger_notify).
+-module(yahoo_messenger_notification).
 -export([read/1]).
 
--include("yahoo_messenger_notify.hrl").
+-include("yahoo_messenger_notification.hrl").
 
 -define(DisconnectReason(Code), case Code of
 	1 -> regen;

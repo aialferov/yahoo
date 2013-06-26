@@ -7,10 +7,12 @@
 	{vsn, "0.0.1"},
 	{description, "Yahoo! API messaging library"},
 	{modules, [
-		yahoo_messenger_backend,
+		yahoo,
+		yahoo_messenger,
 		yahoo_messenger_error,
-		yahoo_messenger_frontend,
-		yahoo_messenger_notify
+		yahoo_messenger_request,
+		yahoo_messenger_session,
+		yahoo_messenger_notification
 	]},
 	{registered, []},
 	{applications, [kernel, stdlib, ssl, httpc, utils, oauth]}
