@@ -17,6 +17,7 @@
 	4 -> self_logoff
 end).
 
+read([]) -> idle;
 read(Notification) ->
 	lists:foldl(fun([{Type, Details}], Acc) -> update(Acc, read(Type, Details))
 	end, #yahoo_notification{}, utils_lists:keyfind2(responses, Notification)).

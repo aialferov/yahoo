@@ -15,5 +15,5 @@
 		yahoo_messenger_notification
 	]},
 	{registered, []},
-	{applications, [kernel, stdlib, ssl, httpc, utils, oauth]}
+	{applications, [kernel, stdlib, ssl, inets, utils, oauth]}
 ]}.
