@@ -20,7 +20,6 @@
 -define(Flags, [oauth, session]).
 
 handle(Command, Flags, Reason) ->
-	io:format("~p~n", [Reason]),
 	request(error_to_request(read_error(Reason)), Command, Flags).
 
 error_to_request(session_expired) -> {ok, login};
