@@ -17,6 +17,9 @@
 -define(BadImCookieError, {{_, "bad IM cookie or URI credentials"}, []}).
 -define(EmptyError, {{999, []}, "\n"}).
 
+-define(FailedToConnect, {failed_connect, _}).
+-define(SocketClosedRemotely, socket_closed_remotely).
+
 -define(Flags, [oauth, session]).
 
 handle(Command, Flags, Reason) ->
@@ -88,7 +91,8 @@ end.
 request({Command, Flags}) -> yahoo_messenger:request(
 	Command, [Flag || Flag <- ?Flags, lists:member(Flag, Flags)]).
 
-read_error(socket_closed_remotely) -> socket_closed_remotely;
+read_error(?FailedToConnect) -> failed_to_connect;
+read_error(?SocketClosedRemotely) -> socket_closed_remotely;
 read_error(?AuthTokenExpiredError) -> token_expired;
 read_error(?AuthSessionExpiredError) -> session_expired;
 read_error(?BadImCookieError) -> bad_im_cookie;
