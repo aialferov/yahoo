@@ -22,7 +22,7 @@
 	"http://" ++ Server ++ "/v1/pushchannel/" ++ PrimaryLoginID).
 
 -define(LoginParams, [
-	{"fieldsBuddyList", "%2Bgroups"},
+	{"fieldsBuddyList", "%2Baddressbook"},
 	{"notifyServerToken", "2"}
 ]).
 -define(LogoutParams(SessionID), [{"sid", SessionID}]).
