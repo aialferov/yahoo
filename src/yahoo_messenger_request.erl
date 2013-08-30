@@ -40,7 +40,7 @@
 
 -define(LoginBody, "{}").
 -define(MessageBody(Message),
-	jsx:encode([{<<"message">>, unicode:characters_to_binary(Message)}])).
+	jsx:encode([{<<"message">>, list_to_binary(Message)}])).
 
 login(OAuth) ->
 	Url = ?SessionUrl, Params = ?LoginParams,
