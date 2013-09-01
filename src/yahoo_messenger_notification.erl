@@ -24,10 +24,12 @@ read(Notification) ->
 
 read(buddyInfo, BuddyInfo) ->
 	{utils_lists:keyfind2(sequence, BuddyInfo), #yahoo_buddy_info{
-		contact_ids = case lists:keyfind(contact, 1, BuddyInfo) of
-			{_, Contacts} -> lists:map(fun(Contact) -> binary_to_list(
-				utils_lists:keyfind2(sender, Contact)) end, Contacts);
-			false -> []
+		buddies = case utils_lists:keyfind(contact, BuddyInfo) of
+			{ok, Contacts} -> [#yahoo_buddy{
+				sender = field(sender, Contact),
+				presence_message = field(presenceMessage, Contact)
+			} || Contact <- Contacts];
+			{error, not_found} -> []
 		end
 	}};
 
@@ -66,3 +68,6 @@ update(N = _Notification, {Sequence, Response}) -> N#yahoo_notification{
 		true -> N#yahoo_notification.sequence end,
 	responses = [Response|N#yahoo_notification.responses]
 }.
+
+field(Name, List) -> case utils_lists:keyfind(Name, List) of
+	{ok, Field} -> binary_to_list(Field); {error, not_found} -> [] end.

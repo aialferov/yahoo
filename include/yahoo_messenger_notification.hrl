@@ -1,5 +1,6 @@
 -record(yahoo_notification, {sequence = 0, responses = []}).
--record(yahoo_buddy_info, {contact_ids = []}).
+-record(yahoo_buddy, {sender, presence_message}).
+-record(yahoo_buddy_info, {buddies = []}).
 -record(yahoo_buddy_status, {}).
 -record(yahoo_log_off, {contact_id}).
 -record(yahoo_message, {contact_id, timestamp, text}).
