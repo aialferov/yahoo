@@ -2,7 +2,7 @@
 -record(yahoo_buddy, {sender, presence_message}).
 -record(yahoo_buddy_info, {buddies = []}).
 -record(yahoo_buddy_status, {}).
--record(yahoo_log_off, {contact_id}).
--record(yahoo_message, {contact_id, timestamp, text}).
+-record(yahoo_log_off, {buddy}).
+-record(yahoo_message, {sender, msg, time_stamp}).
 -record(yahoo_offline_message, {messages}).
 -record(yahoo_disconnect, {reason}).

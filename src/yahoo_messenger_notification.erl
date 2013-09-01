@@ -36,9 +36,8 @@ read(buddyInfo, BuddyInfo) ->
 read(buddyStatus, BuddyStatus) ->
 	{utils_lists:keyfind2(sequence, BuddyStatus), #yahoo_buddy_status{}};
 
-read(logOff, LogOff) ->
-	{utils_lists:keyfind2(sequence, LogOff), #yahoo_log_off{
-		contact_id = binary_to_list(utils_lists:keyfind2(buddy, LogOff))}};
+read(logOff, LogOff) -> {utils_lists:keyfind2(sequence, LogOff),
+	#yahoo_log_off{buddy = field(buddy, LogOff)}};
 
 read(message, Message) ->
 	{utils_lists:keyfind2(sequence, Message), read_message(Message)};
@@ -58,9 +57,9 @@ read(disconnect, Disconnect) ->
 read(_, Notification) -> {utils_lists:keyfind2(sequence, Notification), []}.
 
 read_message(Message) -> #yahoo_message{
-	contact_id = binary_to_list(utils_lists:keyfind2(sender, Message)),
-	timestamp = utils_lists:keyfind2(timeStamp, Message),
-	text = binary_to_list(utils_lists:keyfind2(msg, Message))
+	sender = field(sender, Message),
+	msg = field(msg, Message),
+	time_stamp = utils_lists:keyfind2(timeStamp, Message)
 }.
 
 update(N = _Notification, {Sequence, Response}) -> N#yahoo_notification{
