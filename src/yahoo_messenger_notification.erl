@@ -25,16 +25,13 @@ read(Notification) ->
 read(buddyInfo, BuddyInfo) ->
 	{utils_lists:keyfind2(sequence, BuddyInfo), #yahoo_buddy_info{
 		buddies = case utils_lists:keyfind(contact, BuddyInfo) of
-			{ok, Contacts} -> [#yahoo_buddy{
-				sender = field(sender, Contact),
-				presence_message = field(presenceMessage, Contact)
-			} || Contact <- Contacts];
+			{ok, Contacts} -> [read_buddy(Contact) || Contact <- Contacts];
 			{error, not_found} -> []
 		end
 	}};
 
-read(buddyStatus, BuddyStatus) ->
-	{utils_lists:keyfind2(sequence, BuddyStatus), #yahoo_buddy_status{}};
+read(buddyStatus, BuddyStatus) -> {utils_lists:keyfind2(sequence, BuddyStatus),
+	#yahoo_buddy_status{buddy = read_buddy(BuddyStatus)}};
 
 read(logOff, LogOff) -> {utils_lists:keyfind2(sequence, LogOff),
 	#yahoo_log_off{buddy = field(buddy, LogOff)}};
@@ -55,6 +52,11 @@ read(disconnect, Disconnect) ->
 		reason = ?DisconnectReason(utils_lists:keyfind2(reason, Disconnect))}};
 
 read(_, Notification) -> {utils_lists:keyfind2(sequence, Notification), []}.
+
+read_buddy(Buddy) -> #yahoo_buddy{
+	sender = field(sender, Buddy),
+	presence_message = field(presenceMessage, Buddy)
+}.
 
 read_message(Message) -> #yahoo_message{
 	sender = field(sender, Message),
