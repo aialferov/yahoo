@@ -23,6 +23,7 @@
 -define(Flags, [oauth, session]).
 
 handle(Command, Flags, Reason) ->
+	io:format("~p [ERROR] ~p~n", [calendar:local_time(), Reason]),
 	request(error_to_request(read_error(Reason)), Command, Flags).
 
 error_to_request(session_expired) -> {ok, login};
