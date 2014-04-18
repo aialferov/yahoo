@@ -20,38 +20,38 @@ end).
 read([]) -> idle;
 read(Notification) ->
 	lists:foldl(fun([{Type, Details}], Acc) -> update(Acc, read(Type, Details))
-	end, #yahoo_notification{}, utils_lists:keyfind2(responses, Notification)).
+	end, #yahoo_notification{}, utils_lists:value(responses, Notification)).
 
 read(buddyInfo, BuddyInfo) ->
-	{utils_lists:keyfind2(sequence, BuddyInfo), #yahoo_buddy_info{
+	{utils_lists:value(sequence, BuddyInfo), #yahoo_buddy_info{
 		buddies = case utils_lists:keyfind(contact, BuddyInfo) of
 			{ok, Contacts} -> [read_buddy(Contact) || Contact <- Contacts];
 			{error, not_found} -> []
 		end
 	}};
 
-read(buddyStatus, BuddyStatus) -> {utils_lists:keyfind2(sequence, BuddyStatus),
+read(buddyStatus, BuddyStatus) -> {utils_lists:value(sequence, BuddyStatus),
 	#yahoo_buddy_status{buddy = read_buddy(BuddyStatus)}};
 
-read(logOff, LogOff) -> {utils_lists:keyfind2(sequence, LogOff),
+read(logOff, LogOff) -> {utils_lists:value(sequence, LogOff),
 	#yahoo_log_off{buddy = field(buddy, LogOff)}};
 
 read(message, Message) ->
-	{utils_lists:keyfind2(sequence, Message), read_message(Message)};
+	{utils_lists:value(sequence, Message), read_message(Message)};
 
 read(offlineMessage, OfflineMessage) ->
 	ReadMessage = fun(Message) -> read_message(
-		utils_lists:keyfind2(message, Message)) end,
-	{utils_lists:keyfind2(sequence, OfflineMessage),
+		utils_lists:value(message, Message)) end,
+	{utils_lists:value(sequence, OfflineMessage),
 		#yahoo_offline_message{messages = lists:map(ReadMessage,
-			utils_lists:keyfind2(messages, OfflineMessage))}
+			utils_lists:value(messages, OfflineMessage))}
 	};
 
 read(disconnect, Disconnect) ->
-	{utils_lists:keyfind2(sequence, Disconnect), #yahoo_disconnect{
-		reason = ?DisconnectReason(utils_lists:keyfind2(reason, Disconnect))}};
+	{utils_lists:value(sequence, Disconnect), #yahoo_disconnect{
+		reason = ?DisconnectReason(utils_lists:value(reason, Disconnect))}};
 
-read(_, Notification) -> {utils_lists:keyfind2(sequence, Notification), []}.
+read(_, Notification) -> {utils_lists:value(sequence, Notification), []}.
 
 read_buddy(Buddy) -> #yahoo_buddy{
 	sender = field(sender, Buddy),
@@ -61,7 +61,7 @@ read_buddy(Buddy) -> #yahoo_buddy{
 read_message(Message) -> #yahoo_message{
 	sender = field(sender, Message),
 	msg = field(msg, Message),
-	time_stamp = utils_lists:keyfind2(timeStamp, Message)
+	time_stamp = utils_lists:value(timeStamp, Message)
 }.
 
 update(N = _Notification, {Sequence, Response}) -> N#yahoo_notification{
